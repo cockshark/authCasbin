@@ -1,0 +1,9 @@
+casbin~=1.18.0
+casbin_sqlalchemy_adapter
+casbin_sqlobject_adapter
+casbin_peewee_adapter
+SQLAlchemy
+peewee
+simpleeval
+fastapi-authz
+jwt
