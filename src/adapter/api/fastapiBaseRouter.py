@@ -5,7 +5,7 @@
 @License :   (C) Copyright 2021-9999, {AKULAKU}
 @Contact :   
 @Software:   PyCharm
-@File    :   baseRouter.py
+@File    :   fastapiBaseRouter.py
 @Time    :   2023/3/16 14:53
 @Desc    :
 
@@ -14,12 +14,13 @@
 __author__ = "wush"
 
 import time
-import logging
 from fastapi import APIRouter
 from fastapi.routing import APIRoute, Callable, Request
 from fastapi.responses import JSONResponse, Response
 
-from public.error import get_request_error_info
+from public.error import request_error_info
+
+from infrastructure.log.log import logger
 from adapter.schema.baseResponse import ResponseModel
 
 
@@ -30,14 +31,14 @@ class CustomRSPRoute(APIRoute):
         async def custom_route_handler(request: Request) -> Response:
             start = time.time()
             try:
-                logging.info(f"body: {await request.body()}, "
+                logger.info(f"body: {await request.body()}, "
                              f"headers: {request.headers}, "
                              f"url: {request.url}")
                 rsp = await original_route_handler(request)
                 return rsp
             except Exception as e:
-                error_info = get_request_error_info(e, request)
-                logging.error(error_info.message, extra=error_info.extra, exc_info=True)
+                error_info = request_error_info(e, request)
+                logger.error(error_info.message, extra=error_info.extra, exc_info=True)
                 return JSONResponse(
                     ResponseModel(
                         success=False,
@@ -47,7 +48,7 @@ class CustomRSPRoute(APIRoute):
                 )
             finally:
                 elapsed = round(time.time() - start, 2)
-                logging.info(
+                logger.info(
                     f"request_elapsed",
                     extra={"url": str(request.base_url),
                            "elapsed": {elapsed}}
@@ -63,5 +64,3 @@ class BaseAPIRouter(APIRouter):
         self.default_response_class = JSONResponse
 
 
-if __name__ == '__main__':
-    pass

@@ -1,4 +1,4 @@
-casbin~=1.18.0
+casbin
 casbin_sqlalchemy_adapter
 casbin_sqlobject_adapter
 casbin_peewee_adapter
@@ -7,3 +7,5 @@ peewee
 simpleeval
 fastapi-authz
 jwt
+asgi-correlation-id
+loguru
