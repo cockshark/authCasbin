@@ -14,8 +14,10 @@
 __author__ = "wush"
 
 import time
+from typing import Callable
 
 import arrow
+from pydantic import Field
 
 
 def now(fmt="YYYY-MM-DD HH:mm:ss ", **kwargs):
@@ -31,6 +33,7 @@ def currentTimeMillisecond() -> int:
     return int(time.time() * 1000)
 
 
-if __name__ == '__main__':
-    print(now(fmt=None))
-    print(now())
+class Timer:
+    generator: int = Field(default_factory=currentTimeMillisecond)
+    generator_1: int = Field(default=currentTimeMillisecond())
+

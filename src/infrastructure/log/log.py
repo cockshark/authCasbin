@@ -50,6 +50,8 @@ class LoggerFactory:
     def create_logger(cls):
         from loguru import logger
 
+
+        cls.configure()
         # info debug .etc
         logger.add(cls.root_log,
                    format=LOGGING_FORMATTER,
@@ -57,6 +59,7 @@ class LoggerFactory:
                    filter=cls.correlation_id_filter,
                    rotation="512 MB",
                    retention="10 days",
+                   colorize=True,
                    backtrace=True,
                    enqueue=True,  # 多進程安全
                    diagnose=True)  # # diagnose,backtrace 追踪显示整个堆栈跟踪，包括变量的值
@@ -68,6 +71,7 @@ class LoggerFactory:
                    filter=cls.correlation_id_filter,
                    rotation="512 MB",
                    retention="10 days",
+                   colorize=True,
                    backtrace=True,
                    enqueue=True,  # 多進程安全
                    diagnose=True)  # # diagnose,backtrace 追踪显示整个堆栈跟踪，包括变量的值
@@ -78,7 +82,7 @@ class LoggerFactory:
 
 
 """
-Making handler globally available, but to make it configurable handler lazy-evaluated.
+Making logger globally available, but to make it configurable logger lazy-evaluated.
 """
 logger = SimpleLazyObject(LoggerFactory.create_logger)
 
