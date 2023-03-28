@@ -14,14 +14,14 @@
 __author__ = "wush"
 
 import time
+
 from fastapi import APIRouter
-from fastapi.routing import APIRoute, Callable, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.routing import APIRoute, Callable, Request
 
-from public.error import request_error_info
-
-from infrastructure.log.log import logger
 from adapter.schema.baseResponse import ResponseModel
+from infrastructure.log.log import logger
+from public.error import request_error_info
 
 
 class CustomRSPRoute(APIRoute):
@@ -32,8 +32,8 @@ class CustomRSPRoute(APIRoute):
             start = time.time()
             try:
                 logger.info(f"body: {await request.body()}, "
-                             f"headers: {request.headers}, "
-                             f"url: {request.url}")
+                            f"headers: {request.headers}, "
+                            f"url: {request.url}")
                 rsp = await original_route_handler(request)
                 return rsp
             except Exception as e:
@@ -58,9 +58,7 @@ class CustomRSPRoute(APIRoute):
 
 
 class BaseAPIRouter(APIRouter):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.route_class = CustomRSPRoute
         self.default_response_class = JSONResponse
-
-

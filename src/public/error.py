@@ -15,7 +15,7 @@ __author__ = "wush"
 
 from fastapi import Request
 
-from adapter.schema.error import ErrorInfo
+from application.dto.error import ErrorInfo
 
 
 def request_error_info(e: Exception, request: Request):

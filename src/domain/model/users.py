@@ -5,13 +5,21 @@
 @License :   (C) Copyright 2021-9999, {AKULAKU}
 @Contact :   
 @Software:   PyCharm
-@File    :   __init__.py.py
-@Time    :   2023/3/23 20:08
+@File    :   users.py
+@Time    :   2023/3/23 21:03
 @Desc    :
 
 '''
 
 __author__ = "wush"
+
+from peewee import Model
+
+
+class CommonUserModel(Model):
+    class Meta:
+        table_name = "t_users"
+
 
 if __name__ == '__main__':
     pass

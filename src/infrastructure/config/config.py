@@ -32,6 +32,9 @@ class Config:
         self.init_options()
         self.logPath()
 
+    def mysql_user_config(self) -> dict:
+        pass
+
     def init_options(self):
         """启动时候可指定命令行环境，也可以直接传入 (跑脚本的场景)"""
         self.parser = parser = argparse.ArgumentParser(description='Process some integers.')
