@@ -18,7 +18,7 @@ from peewee import Model
 
 class CommonUserModel(Model):
     class Meta:
-        table_name = "t_users"
+        table_name = "user"
 
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ async def shutdown():
 settings = {
     "title": "fastAPI·用户后台管理系统",
     "description": "用户管理api",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "on_startup": [startup],
     "on_shutdown": [shutdown],
 }
