@@ -17,7 +17,20 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
+import yaml
+from pydantic import BaseModel
+
 from pkg.functional import SimpleLazyObject
+
+project = Path(__file__).parent.parent.parent.parent
+
+
+class MySQLCfg(BaseModel):
+    host: str
+    port: int
+    user: str
+    password: str
+    database: str
 
 
 class Config:
@@ -32,8 +45,26 @@ class Config:
         self.init_options()
         self.logPath()
 
-    def mysql_user_config(self) -> dict:
-        pass
+    @property
+    def _db_config(self) -> dict:
+        src = project.joinpath("src")
+        conf = src.joinpath("conf")
+
+        database_cfg = conf.joinpath("risk.yaml")
+
+        if not database_cfg.exists():
+            raise FileNotFoundError(f"配置未见 risk.yaml 不存在， 请上传到")
+
+        with open(database_cfg, 'rb') as f:
+            cfg = yaml.load(f.read(), yaml.FullLoader)
+
+            return cfg
+
+    @property
+    def risk_mysql_cfg(self) -> Optional[dict]:
+        _db_cfg = self._db_config
+
+        return MySQLCfg(**_db_cfg['test_risk']).dict()
 
     def init_options(self):
         """启动时候可指定命令行环境，也可以直接传入 (跑脚本的场景)"""
@@ -57,7 +88,6 @@ class Config:
 
     @classmethod
     def logPath(cls) -> None:
-        project = Path(__file__).parent.parent.parent.parent
 
         cls.log_root = project.joinpath("logs")
 
@@ -73,6 +103,7 @@ class Config:
 
 system_config = SimpleLazyObject(Config)
 
-
 if __name__ == '__main__':
     ob = Config()
+
+    print(ob.risk_mysql_cfg)

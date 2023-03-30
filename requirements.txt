@@ -9,3 +9,4 @@ fastapi-authz
 jwt
 asgi-correlation-id
 loguru
+pyyaml

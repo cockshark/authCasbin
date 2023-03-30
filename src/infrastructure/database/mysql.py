@@ -27,6 +27,12 @@ class MySQLPersistence:
         self.model = model
         self.model._meta.database = client.pool  # 注入pool
 
+    def create_superuser(self, username: str = "casbinAdmin") -> None:
+        pass
+
+    def create_temp_users(self) -> None:
+        pass
+
 
 if __name__ == '__main__':
     pass
