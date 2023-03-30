@@ -13,7 +13,7 @@
 
 __author__ = "wush"
 
-from peewee_async import PooledMySQLDatabase as AsyncPooledMySQLDatabase, Manager
+from peewee_async import PooledMySQLDatabase as AsyncPooledMySQLDatabase
 from playhouse.shortcuts import ReconnectMixin
 
 from infrastructure.config.config import system_config
@@ -31,7 +31,7 @@ class ReconnectAsyncPooledMySQLDatabase(ReconnectMixin, AsyncPooledMySQLDatabase
             max_connections ： 最大链接数
         """
         # init some class attr
-        cls.pool = None # type :
+        cls.pool = None  # type :
 
         print(db_config)
         cls.get_db_instance(db_config, max_connections)
@@ -55,13 +55,16 @@ class RiskDbConn(ReconnectAsyncPooledMySQLDatabase, db_config=system_config.risk
 
 if __name__ == '__main__':
     db = RiskDbConn.pool
-    
+
     from peewee import (
         Model,
         BigIntegerField, SmallIntegerField,
         CharField,
         DateTimeField)
-    
+
+    from peewee_async import Manager
+
+
     class Service(Model):
         id = BigIntegerField(primary_key=True)
         group_id = SmallIntegerField(null=False)
@@ -74,6 +77,7 @@ if __name__ == '__main__':
         class Meta:
             database = db
             table_name = "t_service"
+
 
     objects = Manager(db)
     db.set_allow_sync(True)
