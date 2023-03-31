@@ -12,3 +12,5 @@ loguru
 pyyaml
 python-jose
 passlib
+arrow
+uvicorn
