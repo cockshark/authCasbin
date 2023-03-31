@@ -13,14 +13,20 @@
 
 __author__ = "wush"
 
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 
 class CommonUser(BaseModel):
     """
     对应数据库的关键字段
     """
-    pass
+
+    username: str = Field(...)
+    email: Optional[str] = Field(default=None)
+    full_name: Optional[str] = Field(default=None)
+    is_active: bool = Field(default=False)
 
 
 if __name__ == '__main__':

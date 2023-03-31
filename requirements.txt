@@ -10,3 +10,5 @@ jwt
 asgi-correlation-id
 loguru
 pyyaml
+python-jose
+passlib

@@ -34,6 +34,8 @@ class ReconnectAsyncPooledMySQLDatabase(ReconnectMixin, AsyncPooledMySQLDatabase
         cls.pool = None  # type :
 
         print(db_config)
+        db_config['autocommit'] = True
+        db_config['charset'] = "utf8mb4"
         cls.get_db_instance(db_config, max_connections)
         super().__init_subclass__()
 
@@ -85,4 +87,5 @@ if __name__ == '__main__':
     # FIX THE YAML database : testdb
     sync_query_list = Service.select(Service.id, Service.create_date).where(Service.id >= 1).execute()
 
+    print([i.env_id for i in sync_query_list])
     assert len(sync_query_list)

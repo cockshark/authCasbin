@@ -17,6 +17,7 @@ Infrastructure 层中接口方法的实现都需要将结果的数据对象转�
 __author__ = "wush"
 
 from peewee import Model
+from typing_extensions import Annotated
 
 from infrastructure.client.mysql import RiskDbConn
 
@@ -27,10 +28,11 @@ class MySQLPersistence:
         self.model = model
         self.model._meta.database = client.pool  # 注入pool
 
-    def create_superuser(self, username: str = "casbinAdmin") -> None:
-        pass
+    async def create_superuser(self, username: str = "casbinAdmin") -> None:
+        hashed_password = None
 
-    def create_temp_users(self) -> None:
+
+    async def create_temp_users(self) -> None:
         pass
 
 

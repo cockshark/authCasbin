@@ -15,11 +15,11 @@ __author__ = "wush"
 
 from typing import Optional, List
 
-from domain.model.users import CommonUserModel
+from domain.model.users import UserModel
 
 
 class CommonUserManager:
-    async def all_users(self) -> Optional[List[CommonUserModel]]:
+    async def all_users(self) -> Optional[List[UserModel]]:
         """
 
         要处理掉不需要的字段信息

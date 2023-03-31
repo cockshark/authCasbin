@@ -38,8 +38,8 @@ create table authcasbin.role
     update_time bigint              not null comment '更新时间',
 
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY  (`role`) USING BTREE,
-    UNIQUE KEY  (`role_key`) USING BTREE,
+    UNIQUE KEY (`role`) USING BTREE,
+    UNIQUE KEY (`role_key`) USING BTREE,
     key `created_by` (`created_by`) USING BTREE,
     KEY `idx_create_time` (`create_time`) USING BTREE,
     KEY `idx_update_time` (`update_time`) USING BTREE
@@ -58,8 +58,8 @@ create table authcasbin.casbin_object
     update_time bigint              not null comment '更新时间',
 
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY  (`object_name`) USING BTREE,
-    UNIQUE KEY  (`object_key`) USING BTREE,
+    UNIQUE KEY (`object_name`) USING BTREE,
+    UNIQUE KEY (`object_key`) USING BTREE,
     key `created_by` (`created_by`) USING BTREE,
     KEY `idx_create_time` (`create_time`) USING BTREE,
     KEY `idx_update_time` (`update_time`) USING BTREE
@@ -79,8 +79,8 @@ create table authcasbin.casbin_action
     update_time bigint              not null comment '更新时间',
 
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE KEY  (`action_name`) USING BTREE,
-    UNIQUE KEY  (`action_key`) USING BTREE,
+    UNIQUE KEY (`action_name`) USING BTREE,
+    UNIQUE KEY (`action_key`) USING BTREE,
     key `created_by` (`created_by`) USING BTREE,
     KEY `idx_create_time` (`create_time`) USING BTREE,
     KEY `idx_update_time` (`update_time`) USING BTREE
@@ -92,7 +92,7 @@ create table authcasbin.casbin_action
 create table authcasbin.casbin_rule
 (
     id    bigint(20) UNSIGNED auto_increment,
-    ptype varchar(128) unique not null comment '资源名称',
+    ptype varchar(128) unique not null,
     v0    varchar(128),
     v1    varchar(128),
     v2    varchar(128),

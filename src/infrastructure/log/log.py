@@ -50,7 +50,6 @@ class LoggerFactory:
     def create_logger(cls):
         from loguru import logger
 
-
         cls.configure()
         # info debug .etc
         logger.add(cls.root_log,

@@ -13,13 +13,13 @@
 
 __author__ = "wush"
 
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from application.dto.users import CommonUser
 from domain.gateway.users import CommonUserManager
 
 
-class Users:
+class UsersExecutor:
 
     def __init__(self, user_manager: CommonUserManager = CommonUserManager()):
         self.user_manager = user_manager
@@ -29,7 +29,14 @@ class Users:
            数据量大可以改成流式查询接口， 使用 pymysql.cursors.SSCursor
         :return:
         """
-        self.user_manager.all_users()
+        return self.user_manager.all_users()
+
+    async def name_all_users(self) -> Optional[Dict[str, dict]]:
+        usersInDb = await self.all_users()
+
+        name_users = {user.username: user.dict() for user in usersInDb}
+
+        return name_users
 
 
 if __name__ == '__main__':

@@ -66,6 +66,12 @@ class Config:
 
         return MySQLCfg(**_db_cfg['test_risk']).dict()
 
+    @property
+    def secret_key(self):
+        _db_cfg = self._db_config
+
+        return _db_cfg['SECRET_KEY']
+
     def init_options(self):
         """启动时候可指定命令行环境，也可以直接传入 (跑脚本的场景)"""
         self.parser = parser = argparse.ArgumentParser(description='Process some integers.')
@@ -107,3 +113,4 @@ if __name__ == '__main__':
     ob = Config()
 
     print(ob.risk_mysql_cfg)
+    print(ob.secret_key)
