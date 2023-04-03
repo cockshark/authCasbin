@@ -42,7 +42,7 @@ class UserModel(Model):
     is_superuser = SmallIntegerField(default=0, help_text="是否超级用户")
     is_active = SmallIntegerField(default=1, help_text="是否正常 (冻结)")
     last_login = BigIntegerField(null=False, default=lambda: int(time.time() * 1000))
-    created_by = BigIntegerField(default=-1, help_text="创建人")
+    created_by = BigIntegerField(default=-1, help_text="创建人，如果是超级管理员，则为0")
     avatar = CharField(max_length=250, null=True, default=None, help_text="用户头像")
     remark = CharField(max_length=250, default='', help_text="备注")
     create_time = BigIntegerField(null=False, default=lambda: int(time.time() * 1000), index=True)

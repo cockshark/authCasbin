@@ -48,7 +48,13 @@ def generate_access_token(data: dict, secret_key: str, algorithm: str, expires_d
     return encoded_jwt
 
 
-def get_password_hash(password):
+def get_password_hash(password: str) -> str:
+    """
+    description: hash密码
+    return {*} hashed_password
+    :param password:
+    :return:
+    """
     return password_context.hash(password)
 
 
