@@ -93,12 +93,12 @@ create table authcasbin.casbin_rule
 (
     id    bigint(20) UNSIGNED auto_increment,
     ptype varchar(128) unique not null,
-    v0    varchar(128),
-    v1    varchar(128),
-    v2    varchar(128),
-    v3    varchar(128),
-    v4    varchar(128),
-    v5    varchar(128),
+    v0    varchar(128) default null,
+    v1    varchar(128) default null,
+    v2    varchar(128) default null,
+    v3    varchar(128) default null,
+    v4    varchar(128) default null,
+    v5    varchar(128) default null,
 
     PRIMARY KEY (`id`) USING BTREE
 

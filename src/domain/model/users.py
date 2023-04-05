@@ -106,12 +106,12 @@ class CasbinActionModel(Model):
 class CasbinRuleModel(Model):
     id = BigIntegerField(primary_key=True)
     ptype = CharField(max_length=128, null=False, unique=True)
-    v0 = CharField(128)
-    v1 = CharField(128)
-    v2 = CharField(128)
-    v3 = CharField(128)
-    v4 = CharField(128)
-    v5 = CharField(128)
+    v0 = CharField(128, null=True)
+    v1 = CharField(128, null=True)
+    v2 = CharField(128, null=True)
+    v3 = CharField(128, null=True)
+    v4 = CharField(128, null=True)
+    v5 = CharField(128, null=True)
 
     class Meta:
         table_name = "casbin_rule"

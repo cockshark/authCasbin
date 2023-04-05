@@ -17,6 +17,19 @@ from fastapi import Request
 
 from application.dto.error import ErrorInfo
 
+# 错误级别
+CLIENT_ERR_LEVEL_CODE = "4"
+INNER_ERR_LEVEL_CODE = "5"
+EXTERNAL_ERR_LEVEL_CODE = "6"
+
+# 错误类型
+INNER_ERR_TYPE_CODE = "00"
+PARAM_ERR_TYPE_CODE = "01"
+
+PARAM_ERROR_CODE = f"{CLIENT_ERR_LEVEL_CODE}{PARAM_ERR_TYPE_CODE}01"  # 参数缺失/格式错误
+INNER_ERROR_CODE = f"{INNER_ERR_LEVEL_CODE}{INNER_ERR_TYPE_CODE}00"  # 服务内部异常
+INNER_ERROR_MSG = f"Inner error."
+
 
 def request_error_info(e: Exception, request: Request):
     """
@@ -25,14 +38,25 @@ def request_error_info(e: Exception, request: Request):
     :param request:
     :return:
     """
-    message = ""  # type:str
-    err_code = ""  # type:str
-    err_msg = ""  # type:str
-    extra: dict = {
-        # "error_code": "",
-        # "error_msg": "",
-        # ...  其他字段
-    }
+    if isinstance(e, RoleNotExistError):
+        message = e.error_msg
+        err_msg = e.error_msg
+        err_code = e.error_code
+        extra = {
+            "error_headers": str(request.headers),
+            "error_msg": message,
+            "url": str(request.url)
+        }
+    else:
+        message = (
+            f"inner error,"
+            f"error: {format(e)}, "
+            f"url: {request.url}, "
+            f"headers: {request.headers}, "
+            f"body: {request._body}"
+        )
+        err_code, err_msg = INNER_ERROR_CODE, INNER_ERROR_MSG
+        extra = {"url": str(request.url)}
 
     return ErrorInfo(
         message=message,
@@ -40,6 +64,13 @@ def request_error_info(e: Exception, request: Request):
         err_msg=err_msg,
         extra=extra
     )
+
+
+class RoleNotExistError(Exception):
+    error_code = PARAM_ERROR_CODE
+
+    def __init__(self, *, role_key: str):
+        self.error_msg = f"query role_key '{role_key}' not exits"
 
 
 if __name__ == '__main__':
