@@ -33,7 +33,6 @@ class ReconnectAsyncPooledMySQLDatabase(ReconnectMixin, AsyncPooledMySQLDatabase
         # init some class attr
         cls.pool = None  # type :
 
-        print(db_config)
         db_config['autocommit'] = True
         db_config['charset'] = "utf8mb4"
         cls.get_db_instance(db_config, max_connections)

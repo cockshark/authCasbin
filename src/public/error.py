@@ -13,7 +13,7 @@
 
 __author__ = "wush"
 
-from fastapi import Request
+from fastapi import Request, HTTPException, status
 
 from application.dto.error import ErrorInfo
 
@@ -47,6 +47,15 @@ def request_error_info(e: Exception, request: Request):
             "error_msg": message,
             "url": str(request.url)
         }
+    if isinstance(e, CredentialsException):
+        message = "用户名不能跟角色key重复"
+        err_msg = e.detail
+        err_code = e.status_code
+        extra = {
+            "error_headers": str(request.headers),
+            "error_msg": message,
+            "url": str(request.url)
+        }
     else:
         message = (
             f"inner error,"
@@ -71,6 +80,17 @@ class RoleNotExistError(Exception):
 
     def __init__(self, *, role_key: str):
         self.error_msg = f"query role_key '{role_key}' not exits"
+
+
+class CredentialsException(HTTPException):
+
+    def __init__(self,
+                 status_code=status.HTTP_401_UNAUTHORIZED,
+                 detail="用户名称重复！",
+                 headers=None):
+        if headers is None:
+            headers = {"WWW-Authenticate": "Bearer"}
+        super().__init__(status_code, detail, headers)
 
 
 if __name__ == '__main__':

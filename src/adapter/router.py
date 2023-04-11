@@ -20,7 +20,6 @@ router = APIRouter()
 
 @router.get('/')
 def index(response: Response):
-
     return {"msg": "hello"}
 
 

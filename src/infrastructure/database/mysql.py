@@ -17,6 +17,8 @@ Infrastructure 层中接口方法的实现都需要将结果的数据对象转�
 
 __author__ = "wush"
 
+from typing import Optional
+
 from peewee import Model
 from peewee_async import Manager
 
@@ -40,8 +42,64 @@ class MySQLPersistence:
     #             user                #
     ###################################
 
-    async def user_count(self) -> int:
-        return await self.objects.execute(self.model.select().count())
+    # async def user_count(self) -> int:
+    #     return await self.objects.execute(self.model.select().count())
+
+    async def get_id_by_username(self, username: str) -> Optional[int]:
+        return await self.objects.execute(self.model.select(self.model.id).where(self.model.username == username))
+
+    async def get_model_by_primary_key(self, primary_key: int):
+        return await self.objects.execute(self.model.select().where(self.model.id == primary_key))
+
+    async def get_models_by_fullfuzz_username(self, fullfuzz: str, offset: int, limit: int):
+        return await self.objects.execute(
+            self.model.select().where(self.model.username.contains(fullfuzz))
+            .order_by(self.model.id).offset(offset).limit(limit))
+
+    async def get_models_count_by_fullfuzz_username(self, fullfuzz: str) -> int:
+        return await self.objects.execute(
+            self.model.select().where(self.model.username.contains(fullfuzz)).count())
+
+    async def get_many_models(self, offset: int, limit: int):
+        return await self.objects.execute(self.model.select().order_by(self.model.id).offset(offset).limit(limit))
+
+    async def update_user_status(self, primary_key: int, is_active: int):
+        await self.objects.execute(
+            self.model.update(self.model.is_active == is_active).where(self.model.id == primary_key))
+
+    async def delete_user_by_id(self, primary_key: int):
+        """
+        这里需要自己指定根据什么删除，且只允许删除一个，且键位必须是unique
+        :param primary_key:
+        :param kwargs:
+        :return:
+        """
+        await self.objects.execute(self.model.delete().where(self.model.id == primary_key))
+
+    async def add_user(
+            self,
+            username: str,
+            full_name: str,
+            password: str,
+            role_key: int,
+            email: str,
+            is_superuser: int,
+            is_active: int,
+            created_by: int,
+            avatar: str,
+            remark: str):
+        return await self.objects.execute(self.model.insert(
+            username=username,
+            full_name=full_name,
+            password=password,
+            role_key=role_key,
+            email=email,
+            is_superuser=is_superuser,
+            is_active=is_active,
+            created_by=created_by,
+            avatar=avatar,
+            remark=remark
+        ))
 
     ###################################
     #             role                #

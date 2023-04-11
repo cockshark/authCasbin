@@ -29,5 +29,9 @@ class CommonUser(BaseModel):
     is_active: bool = Field(default=False)
 
 
+class CommonRole(BaseModel):
+    role_key: str
+
+
 if __name__ == '__main__':
     pass

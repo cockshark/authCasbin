@@ -37,6 +37,13 @@ class Token(BaseModel):
     token_type: str
 
 
+class GeneralOutputDto(ResponseModel):
+    pass
+
+class LogoutOutputDto(ResponseModel):
+    pass
+
+
 class TokenData(BaseModel):
     username: Optional[str] = Field(default=None)
     scopes: List[str] = []
@@ -49,8 +56,20 @@ class User(BaseModel):
     is_active: bool = Field(default=False)  # 是否激活
 
 
-class UserInDB(User):
-    hashed_password: str = Field(...)
+class Users(BaseModel):
+    users: List[User]
+    count: int
+
+
+class UserCreateInputDto(User):
+    password: str = Field(...)
+    current_user: str = Field(..., description="當前用戶")
+    avatar: Optional[str] = Field(None, description="用户头像")
+    remark: str = Field(default="", description="备注")
+
+
+class UserCreateOutputDto(ResponseModel):
+    pass
 
 
 class UserListInputDto(BaseModel):

@@ -47,15 +47,44 @@ class CommonUserManager:
             full_name: str,
             hash_password: str,
             email: str,
+            created_by: int,
             remark: str = "",
             **kwargs) -> int:
-        pass
+        is_superuser = kwargs.get("is_superuser", 0)
+        is_active = kwargs.get("is_active", 1)
+        avatar = kwargs.get("avatar", "")
+        return await self.user_persist.add_user(username, full_name, hash_password, role_key=-1, email=email,
+                                                is_superuser=is_superuser, is_active=is_active, created_by=created_by,
+                                                avatar=avatar, remark=remark)
 
     async def get_user_by_username(self, username: str) -> Optional[UserModel]:
         pass
 
     async def total_user_count(self) -> int:
         return await self.user_persist.count()
+
+    async def get_id_by_username(self, username: str) -> Optional[int]:
+        return await self.user_persist.get_id_by_username(username)
+
+    async def get_user_by_id(self, primary_key: int) -> Optional[UserModel]:
+        return await self.user_persist.get_model_by_primary_key(primary_key)
+
+    async def get_users_by_fullfuzz_username(self, keyword, offset, limit) -> Optional[List[UserModel]]:
+        return await self.user_persist.get_models_by_fullfuzz_username(keyword, offset, limit)
+
+    async def get_many_users(self, offset: int, limit: int) -> Optional[List[UserModel]]:
+        return await self.user_persist.get_many_models(offset, limit)
+
+    async def get_users_count_by_fullfuzz_username(self, keyword: str) -> int:
+        return await self.user_persist.get_models_count_by_fullfuzz_username(keyword)
+
+    async def update_user_status(self, primary_key: int, is_active: int):
+        if is_active >= 1:
+            is_active = 1
+        return await self.user_persist.update_user_status(primary_key, is_active)
+
+    async def delete_user_by_id(self, primary_key):
+        await self.user_persist.delete_user_by_id(primary_key=primary_key)
 
 
 class CommonRoleManager:

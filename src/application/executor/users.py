@@ -18,7 +18,7 @@ from typing import Optional, List, Dict
 
 from email_validator import validate_email
 
-from application.dto.users import CommonUser
+from application.dto.users import CommonUser, CommonRole
 from domain.gateway.users import (
     CommonUserManager,
     CommonRoleManager,
@@ -28,9 +28,12 @@ from domain.gateway.users import (
 from infrastructure.log.log import logger
 from pkg.verifyUtil import get_password_hash
 from public.constants import DEFAULT_PASSWORD
+from public.error import RoleNotExistError
 
 
 class UsersExecutor:
+
+    # todo 所有数据要进行dto处理，去掉一些不必要的信息
 
     def __init__(self):
 
@@ -70,7 +73,7 @@ class UsersExecutor:
         创建一下普通的角色用于测试
         :return:
         """
-        hashed_password = get_password_hash(DEFAULT_PASSWORD)
+        password = DEFAULT_PASSWORD
         # 普通用户角色
         role_generaluser = await self.role_manager.get_role_by_key(role_key="role_generaluser")
 
@@ -81,33 +84,66 @@ class UsersExecutor:
                 username = "generaluser" + str(i)
                 email = "generaluser" + str(i) + "@akulaku.com"
                 await self.create_user(username=username, full_name=username,
-                                       hash_password=hashed_password, email=email,
+                                       password=password, email=email,
+                                       current_user="casbinAdmin",
                                        remark="我是用于测试的临时创造的普通用户", is_active=is_active)
                 # 增加policy
                 await self.set_role_casbin_rule(ptype="g", v0=username, v1=role_generaluser.role_key)
+
+    async def get_user_by_id(self, primary_key: int):
+        return await self.user_manager.get_user_by_id(primary_key)
+
+    async def get_users_by_keyword(self, keyword: str, offset: int, limit: int):
+        if keyword:
+            return await self.user_manager.get_users_by_fullfuzz_username(keyword, offset, limit)
+
+        return await self.user_manager.get_many_users(offset, limit)
+
+    async def get_total_amount_by_keyword(self, keyword: str) -> int:
+        if keyword:
+            return await self.user_manager.get_users_count_by_fullfuzz_username()
+
+        return await self.user_manager.total_user_count()
+
+    async def change_user_status_reverse(self, user_id: int):
+        user = await self.user_manager.get_user_by_id(user_id)
+        if user.is_active:
+            logger.warning(f"freeze user {user.username}")
+            await self.user_manager.update_user_status(primary_key=user_id, is_active=0)
+            return
+
+        await self.user_manager.update_user_status(primary_key=user_id, is_active=1)
+
+    async def delete_user_by_id(self,primary_key:int):
+        await self.user_manager.delete_user_by_id(primary_key)
 
     async def create_user(
             self,
             username: str,
             full_name: str,
-            hash_password: str,
+            password: str,
             email: str,
+            current_user: str,
             remark: str = "",
             **kwargs) -> int:
         """
 
+        :param current_user:  當前用戶用戶名
+        :param password: 密碼
         :param full_name: 全名
         :param username: 用戶名
-        :param hash_password: 哈希密碼
         :param email: 郵箱
         :param remark: 备注
         :return: 创建用户的id, 返回0 表示创建失败
         """
-        if not validate_email(email):
-            logger.error(f"email :{email} EmailSyntaxError !")
-            return 0
+        validate_email(email)
+        current_user_id = await self.user_manager.get_id_by_username(current_user)
+        if not current_user_id:
+            current_user_id = -1
 
-        return await self.user_manager.create_user(username, full_name, hash_password, email, remark=remark, **kwargs)
+        hash_password = get_password_hash(password)
+        return await self.user_manager.create_user(username, full_name, hash_password, email,
+                                                   created_by=current_user_id, remark=remark, **kwargs)
 
     async def _create_superuser(self, username: str = "casbinAdmin") -> None:
         """
@@ -115,14 +151,15 @@ class UsersExecutor:
         :param username:
         :return:
         """
-        hashed_password = get_password_hash(DEFAULT_PASSWORD)
+        password = DEFAULT_PASSWORD
         if not await self.user_manager.is_user_exist(username):
-            logger.debug(f"创建超级管理员 username: casbinadmin")
+            logger.debug(f"创建超级管理员 username: casbinAdmin")
             await self.create_user(
                 username=username,
                 full_name=username,
-                hash_password=hashed_password,
+                password=password,
                 email="casbinadmin@akulaku.com",
+                current_user="system",
                 remark="超级管理员，拥有所有权限",
                 is_superuser=1, is_active=1, created_by=0)
 
@@ -188,6 +225,20 @@ class UsersExecutor:
 
             # 自动生成一些普通用户
             await self._create_tmp_users()
+
+    """
+        role
+    """
+
+    async def get_role_by_role_key(self, role_key: str) -> Optional[CommonRole]:
+
+        try:
+            role = await self.role_manager.get_role_by_key(role_key)
+        except RoleNotExistError as e:
+            logger.error(e.error_msg)
+            return None
+        else:
+            return CommonRole(role_key=role.id)
 
     """
         casbin rule
