@@ -40,6 +40,7 @@ class Token(BaseModel):
 class GeneralOutputDto(ResponseModel):
     pass
 
+
 class LogoutOutputDto(ResponseModel):
     pass
 
@@ -50,10 +51,12 @@ class TokenData(BaseModel):
 
 
 class User(BaseModel):
+    user_id: int
     username: str = Field(...)
     email: Optional[str] = Field(default=None)
     full_name: Optional[str] = Field(default=None)
     is_active: bool = Field(default=False)  # 是否激活
+    password: str = Field()
 
 
 class Users(BaseModel):
@@ -72,6 +75,16 @@ class UserCreateOutputDto(ResponseModel):
     pass
 
 
+class UpdateUserDto(BaseModel):
+    user_id: int
+    username: str
+    fullname: str
+    password: Optional[str] = Field(default="")
+    email: str
+    avatar: Optional[str] = Field(default=None)
+    remark: Optional[str] = Field(default=None)
+
+
 class UserListInputDto(BaseModel):
     pass
 
@@ -85,6 +98,11 @@ class UserListOutputData(BaseModel):
 
 class UserListOutputDto(ResponseModel):
     data: Optional[List[UserListOutputData]]
+
+
+class UpdateUserRoleDto(BaseModel):
+    user_id: int
+    roles: List[str] = Field(description="角色名称")
 
 
 if __name__ == '__main__':

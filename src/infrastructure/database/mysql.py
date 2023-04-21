@@ -48,6 +48,12 @@ class MySQLPersistence:
     async def get_id_by_username(self, username: str) -> Optional[int]:
         return await self.objects.execute(self.model.select(self.model.id).where(self.model.username == username))
 
+    async def get_user_by_username(self, username: str):
+        return await self.objects.execute(self.model.select().where(self.model.username == username))
+
+    async def get_user_by_fullname(self, fullname: str):
+        return await self.objects.execute(self.model.select().where(self.model.fullname == fullname))
+
     async def get_model_by_primary_key(self, primary_key: int):
         return await self.objects.execute(self.model.select().where(self.model.id == primary_key))
 
@@ -66,6 +72,9 @@ class MySQLPersistence:
     async def update_user_status(self, primary_key: int, is_active: int):
         await self.objects.execute(
             self.model.update(self.model.is_active == is_active).where(self.model.id == primary_key))
+
+    async def update_user_info(self, user_id: int, **kwargs):
+        await self.objects.execute(self.model.update(**kwargs).where(self.model.id == user_id))
 
     async def delete_user_by_id(self, primary_key: int):
         """
@@ -180,3 +189,6 @@ class MySQLPersistence:
 
     async def add_casbin_rule(self, **kwargs):
         await self.objects.execute(self.model.insert(**kwargs))
+
+    async def delete_casbin_rule(self, **kwargs):
+        await self.objects.execute(self.model.delete().where(**kwargs))

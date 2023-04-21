@@ -14,21 +14,11 @@
 __author__ = "wush"
 
 from datetime import datetime, timedelta
-from typing import Optional, Dict
+from typing import Optional
 
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel, Field
-
-
-class UserInDB(BaseModel):
-    username: str = Field(...)
-    email: Optional[str] = Field(default=None)
-    full_name: Optional[str] = Field(default=None)
-    is_active: bool = Field(default=False)  # 是否激活
-    hashed_password: str = Field(...)
-
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token",
@@ -38,12 +28,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token",
 
 def verify_password(plain_password, hashed_password):
     return password_context.verify(plain_password, hashed_password)
-
-
-def get_user(users: Dict[str, Dict], username: str) -> Optional[UserInDB]:
-    if username in users:
-        user_dict = users[username]
-        return UserInDB(**user_dict)
 
 
 def generate_access_token(data: dict, secret_key: str, algorithm: str, expires_delta: Optional[timedelta] = None):

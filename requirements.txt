@@ -16,3 +16,4 @@ passlib
 arrow
 uvicorn
 email-validator
+testcontainers

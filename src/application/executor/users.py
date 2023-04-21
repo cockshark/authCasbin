@@ -93,6 +93,9 @@ class UsersExecutor:
     async def get_user_by_id(self, primary_key: int):
         return await self.user_manager.get_user_by_id(primary_key)
 
+    async def get_user_by_username(self, username: str):
+        return await self.user_manager.get_user_by_username(username)
+
     async def get_users_by_keyword(self, keyword: str, offset: int, limit: int):
         if keyword:
             return await self.user_manager.get_users_by_fullfuzz_username(keyword, offset, limit)
@@ -101,7 +104,7 @@ class UsersExecutor:
 
     async def get_total_amount_by_keyword(self, keyword: str) -> int:
         if keyword:
-            return await self.user_manager.get_users_count_by_fullfuzz_username()
+            return await self.user_manager.get_users_count_by_fullfuzz_username(keyword=keyword)
 
         return await self.user_manager.total_user_count()
 
@@ -114,8 +117,40 @@ class UsersExecutor:
 
         await self.user_manager.update_user_status(primary_key=user_id, is_active=1)
 
-    async def delete_user_by_id(self,primary_key:int):
+    async def delete_user_by_id(self, primary_key: int):
         await self.user_manager.delete_user_by_id(primary_key)
+
+    async def update_user_baseInfo(self,
+                                   user_id: int,
+                                   username: str = '',
+                                   fullname: str = '',
+                                   email: str = '',
+                                   avatar: str = '',
+                                   remark: str = '',
+                                   password: str = ''):
+        if password != '':
+            hashed_password = get_password_hash(password)
+        else:
+            hashed_password = None
+
+        user = await self.user_manager.get_user_by_id(primary_key=user_id)
+
+        # 处理数据， 空数据不进行更新
+        user.username = username if username != '' else user.username
+        user.fullname = fullname if fullname != '' else user.fullname
+        user.email = email if email != '' else user.email
+        user.avatar = avatar if avatar != '' else user.avatar
+        user.remark = remark if remark != '' else user.remark
+        user.password = hashed_password if hashed_password else user.password
+
+        await self.user_manager.update_user_info_by_userid(
+            user_id=user_id,
+            username=user.username,
+            fullname=user.full_name,
+            email=user.email,
+            avatar=user.avatar,
+            remark=user.remark,
+            password=user.password)
 
     async def create_user(
             self,
@@ -240,9 +275,26 @@ class UsersExecutor:
         else:
             return CommonRole(role_key=role.id)
 
+    async def update_user_role(self, user_id: int, roles: List[str]):
+
+        user = await self.get_user_by_id(user_id)
+        casbin_rules = await self.casbin_rule_manager.get_rules_by_filter(ptype="g", v0=user.username)
+        if len(casbin_rules) > 0:
+            await self.delete_p_casbin_rules(username=user.username)
+        
+
     """
         casbin rule
     """
+
+    async def delete_p_casbin_rules(self, username: str):
+        """
+        删除该用户所拥有的所有的用户组role
+        :param username:
+        :return:
+        """
+
+        await self.casbin_rule_manager.delete_p_casbin_rules(ptype="g", v0=username)
 
     async def set_role_casbin_rules(self, role, casbin_actions, casbin_objects):
 

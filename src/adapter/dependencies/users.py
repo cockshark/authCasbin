@@ -14,7 +14,7 @@
 __author__ = "wush"
 
 from datetime import timedelta
-from typing import Optional, Annotated, Dict
+from typing import Optional, Annotated
 
 from authlib.jose import jwt
 from fastapi import Depends, HTTPException, status, Security
@@ -26,18 +26,21 @@ from adapter.schema.users import AppTokenConfig, TokenData, User
 from application.executor.users import UsersExecutor
 from infrastructure.log.log import logger
 from pkg.verifyUtil import (
-    get_user,
     verify_password,
     generate_access_token, oauth2_scheme
 )
 
 
-def authenticate_user(users, username: str, password: str):
-    user = get_user(users, username)
+async def get_user(username: str, executor=UsersExecutor()) -> Optional[User]:
+    return await executor.get_user_by_username(username)
+
+
+def authenticate_user(username: str, password: str):
+    user = await get_user(username)
     if not user:
         logger.error(f"user {username} not exist")
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password):
         logger.error("password not correct")
         return False
     return user
@@ -45,11 +48,6 @@ def authenticate_user(users, username: str, password: str):
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return generate_access_token(data, AppTokenConfig.SECRET_KEY, AppTokenConfig.ALGORITHM, expires_delta=expires_delta)
-
-
-async def get_users_from_db() -> Optional[Dict[str, dict]]:
-    executor = UsersExecutor()
-    return await executor.name_all_users()
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
@@ -68,8 +66,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     except JWTError:
         raise credentials_exception
 
-    usersInDb = await get_users_from_db()
-    user = get_user(usersInDb, username=token_data.username)
+    user = await get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -104,8 +101,8 @@ async def get_current_user_with_scope(
         token_data = TokenData(scopes=token_scopes, username=username)
     except (JWTError, ValidationError):
         raise credentials_exception
-    usersInDb = await get_users_from_db()
-    user = get_user(usersInDb, username=token_data.username)
+
+    user = await get_user(username=token_data.username)
     if user is None:
         raise credentials_exception
     for scope in security_scopes.scopes:

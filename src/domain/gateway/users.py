@@ -57,8 +57,20 @@ class CommonUserManager:
                                                 is_superuser=is_superuser, is_active=is_active, created_by=created_by,
                                                 avatar=avatar, remark=remark)
 
+    async def update_user_info_by_userid(self, user_id: int, username, fullname, email, avatar, remark, password):
+        await self.user_persist.update_user_info(user_id=user_id,
+                                                 username=username,
+                                                 fullname=fullname,
+                                                 email=email,
+                                                 avatar=avatar,
+                                                 remark=remark,
+                                                 password=password)
+
     async def get_user_by_username(self, username: str) -> Optional[UserModel]:
-        pass
+        return await self.user_persist.get_user_by_username(username=username)
+
+    async def get_user_by_fullname(self, fullname: str) -> Optional[UserModel]:
+        return await self.user_persist.get_user_by_fullname(fullname=fullname)
 
     async def total_user_count(self) -> int:
         return await self.user_persist.count()
@@ -181,9 +193,17 @@ class CommonCasbinRuleManager:
     async def get_single_rule_by_filter(self, **kwargs) -> Optional[CasbinRuleModel]:
         return await self.casbin_rule_persist.get_rule_by_filter(**kwargs)
 
+    async def get_rules_by_filter(self, **kwargs):
+        logger.info(f"add_casbin_rule kwargs :{kwargs}")
+        return await self.casbin_rule_persist.get_rules_by_filter(**kwargs)
+
     async def add_casbin_rule(self, **kwargs):
         logger.info(f"add_casbin_rule kwargs :{kwargs}")
         await self.casbin_rule_persist.add_casbin_rule(**kwargs)
+
+    async def delete_p_casbin_rules(self, **kwargs):
+        logger.info(f"delete_casbin_rule kwargs :{kwargs}")
+        return self.casbin_rule_persist.delete_casbin_rule(**kwargs)
 
 
 if __name__ == '__main__':

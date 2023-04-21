@@ -20,7 +20,7 @@ todo: 依赖权限处理，不是每个用户都有权限进行对应的操作
 __author__ = "wush"
 
 from datetime import timedelta
-from typing import Annotated, Dict
+from typing import Annotated
 
 from casbin import Enforcer
 from fastapi import (
@@ -32,12 +32,15 @@ from pydantic import Field
 from adapter.casbin_enforcer import get_casbin_e
 from adapter.dependencies.users import (
     authenticate_user,
-    get_users_from_db,
     create_access_token,
     get_current_active_user,
     get_current_active_user_with_scope,
     get_current_user_with_scope)
-from adapter.schema.users import LogoutOutputDto, Users, GeneralOutputDto
+from adapter.schema.users import (
+    LogoutOutputDto,
+    Users,
+    GeneralOutputDto,
+    UpdateUserDto)
 from public.error import CredentialsException
 
 """
@@ -48,7 +51,6 @@ from adapter.api.fastapiBaseRouter import BaseAPIRouter
 from adapter.schema.users import (
     UserListInputDto,
     UserListOutputDto,
-    UserListOutputData,
     Token,
     AppTokenConfig, User
 )
@@ -57,6 +59,8 @@ from adapter.schema.users import (
     UserCreateInputDto,
     UserCreateOutputDto
 )
+
+from adapter.schema.users import UpdateUserRoleDto
 
 from application.executor.users import UsersExecutor
 
@@ -72,14 +76,13 @@ users_router = BaseAPIRouter(tags=["user"])
                    description="获取token，登录",
                    response_model=Token)
 async def login_for_access_token(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        usersInDb: Annotated[Dict[Dict[str, dict]], Depends(get_users_from_db)]
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
     """
     The scopes parameter receives a dict with each scope as a key and the description as the value:
 
     """
-    user = authenticate_user(usersInDb, form_data.username, form_data.password)
+    user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -227,7 +230,9 @@ async def update_user_status(request: Request,
     return GeneralOutputDto()
 
 
-@users_router.get("/user/delete_user", description="删除用户", response_model=GeneralOutputDto)
+@users_router.get("/user/delete_user",
+                  description="删除用户",
+                  response_model=GeneralOutputDto)
 async def delete_single_user(request: Request,
                              current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
                              executor: UsersExecutor,
@@ -243,6 +248,79 @@ async def delete_single_user(request: Request,
     return GeneralOutputDto()
 
 
+@users_router.post("/user/update_user",
+                   description="更新user信息内容",
+                   response_model=GeneralOutputDto)
+async def update_user(request: Request,
+                      current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                      executor: UsersExecutor,
+                      e: Enforcer = Depends(get_casbin_e),
+                      body: UpdateUserDto = Body(...)
+                      ):
+    """
+    更新（旗下）用户信息
+    处理别的用户信息，应该用id进行定位
+    :param body:
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :return:
+    """
+    enforce = e.enforce(current_user.username, "User", "update")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    if executor.get_role_by_role_key(body.username):
+        raise CredentialsException(detail="用户名称重复!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.update_user_baseInfo(
+        user_id=body.user_id,
+        username=body.username,
+        fullname=body.fullname,
+        email=body.email,
+        avatar=body.avatar,
+        remark=body.remark,
+        password=body.password
+    )
+
+    return GeneralOutputDto(success=True)
+
+
+@users_router.post("/user/update_me",
+                   description="更新当前用户信息内容",
+                   response_model=GeneralOutputDto)
+async def update_me(request: Request,
+                    current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                    executor: UsersExecutor,
+                    e: Enforcer = Depends(get_casbin_e),
+                    body: UpdateUserDto = Body(...)):
+    """
+    更改自己的信息，应该用 自己的 username 进行定位
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :param body:
+    :return:
+    """
+    enforce = e.enforce(current_user.username, "User", "update")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.update_user_baseInfo(
+        user_id=current_user.user_id,
+        username=body.username,
+        fullname=body.fullname,
+        email=body.email,
+        avatar=body.avatar,
+        remark=body.remark,
+        password=body.password
+    )
+
+    return GeneralOutputDto(success=True)
+
+
 @users_router.get("/status/")
 async def read_system_status(current_user: Annotated[User, Depends(get_current_user_with_scope)]):
     return {"status": "ok"}
@@ -253,8 +331,37 @@ async def read_system_status(current_user: Annotated[User, Depends(get_current_u
                    response_model=UserListOutputDto
                    )
 async def user_list(request: Request, body: UserListInputDto = Body(...)):
-    users = None
-    return UserListOutputDto(data=UserListOutputData)
+    pass
+
+
+######################################
+# Role相关的api接口
+######################################
+@users_router.post("/user/change_users_role",
+                   description="修改用户的所属角色（用户组）",
+                   response_model=GeneralOutputDto)
+async def change_users_role(request: Request,
+                            current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                            executor: UsersExecutor,
+                            e: Enforcer = Depends(get_casbin_e),
+                            body: UpdateUserRoleDto = Body()
+                            ):
+    """
+    修改用户所属角色或者用户组,复数，一个用户可以拥有多个角色
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :param body:
+    :return:
+    """
+    enforce = e.enforce(current_user.username, "User", "update")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.update_user_role(user_id=body.user_id, roles=body.roles)
+
+    return GeneralOutputDto(success=True)
 
 
 if __name__ == '__main__':
