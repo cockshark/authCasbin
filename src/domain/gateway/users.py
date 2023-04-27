@@ -190,20 +190,70 @@ class CommonCasbinRuleManager:
     async def casbin_rule_count(self) -> int:
         return await self.casbin_rule_persist.count()
 
-    async def get_single_rule_by_filter(self, **kwargs) -> Optional[CasbinRuleModel]:
-        return await self.casbin_rule_persist.get_rule_by_filter(**kwargs)
+    async def get_single_rule_by_filter(self, ptype: str, **kwargs) -> Optional[CasbinRuleModel]:
+        v0, v1, v2, v3 = kwargs.get("v0"), kwargs.get("v1"), kwargs.get("v2"), kwargs.get("v3")
+        v4, v5 = kwargs.get("v4"), kwargs.get("v5")
+        if len(kwargs) == 6:
+            return await self.casbin_rule_persist.get_rule_by_filter_by_v0v1v2v3v4v5(ptype,
+                                                                                     v0, v1, v2, v3, v4, v5)
+        if "v4" in kwargs:
+            return await self.casbin_rule_persist.get_rule_by_filter_by_v0v1v2v3v4(ptype, v0, v1, v2, v3, v4)
 
-    async def get_rules_by_filter(self, **kwargs):
-        logger.info(f"add_casbin_rule kwargs :{kwargs}")
-        return await self.casbin_rule_persist.get_rules_by_filter(**kwargs)
+        if "v3" in kwargs:
+            return await self.casbin_rule_persist.get_rule_by_filter_by_v0v1v2v3(ptype, v0, v1, v2, v3)
+
+        if "v2" in kwargs:
+            return await self.casbin_rule_persist.get_rule_by_filter_by_v0v1v2(ptype, v0, v1, v2)
+
+        if "v1" in kwargs:
+            return await self.casbin_rule_persist.get_rule_by_filter_by_v0v1(ptype, v0, v1)
+
+        return await self.casbin_rule_persist.get_rule_by_filter_by_v0(ptype, v0)
+
+    async def get_rules_by_filter(self, ptype: str, **kwargs):
+        v0, v1, v2, v3 = kwargs.get("v0"), kwargs.get("v1"), kwargs.get("v2"), kwargs.get("v3")
+        v4, v5 = kwargs.get("v4"), kwargs.get("v5")
+        if len(kwargs) == 6:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3v4v5(ptype,
+                                                                                      v0, v1, v2, v3, v4, v5)
+        if "v4" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3v4(ptype, v0, v1, v2, v3, v4)
+
+        if "v3" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3(ptype, v0, v1, v2, v3)
+
+        if "v2" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2(ptype, v0, v1, v2)
+
+        if "v1" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1(ptype, v0, v1)
+
+        return await self.casbin_rule_persist.get_rules_by_filter_by_v0(ptype, v0)
 
     async def add_casbin_rule(self, **kwargs):
         logger.info(f"add_casbin_rule kwargs :{kwargs}")
         await self.casbin_rule_persist.add_casbin_rule(**kwargs)
 
-    async def delete_p_casbin_rules(self, **kwargs):
+    async def delete_p_casbin_rules(self, ptype: str, **kwargs):
         logger.info(f"delete_casbin_rule kwargs :{kwargs}")
-        return self.casbin_rule_persist.delete_casbin_rule(**kwargs)
+        v0, v1, v2, v3 = kwargs.get("v0"), kwargs.get("v1"), kwargs.get("v2"), kwargs.get("v3")
+        v4, v5 = kwargs.get("v4"), kwargs.get("v5")
+        if len(kwargs) == 6:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3v4v5(ptype,
+                                                                                      v0, v1, v2, v3, v4, v5)
+        if "v4" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3v4(ptype, v0, v1, v2, v3, v4)
+
+        if "v3" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2v3(ptype, v0, v1, v2, v3)
+
+        if "v2" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1v2(ptype, v0, v1, v2)
+
+        if "v1" in kwargs:
+            return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1(ptype, v0, v1)
+
+        return self.casbin_rule_persist.delete_casbin_rule_by_v0(ptype=ptype, v0=v0)
 
 
 if __name__ == '__main__':

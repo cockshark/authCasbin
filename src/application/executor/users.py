@@ -281,7 +281,6 @@ class UsersExecutor:
         casbin_rules = await self.casbin_rule_manager.get_rules_by_filter(ptype="g", v0=user.username)
         if len(casbin_rules) > 0:
             await self.delete_p_casbin_rules(username=user.username)
-        
 
     """
         casbin rule
@@ -334,8 +333,7 @@ class UsersExecutor:
         :param kwargs: v0,v1,v2,v3,v4,v5  一个或者多个
         :return:
         """
-        kwargs.update({"ptype": ptype})
-        return await self.casbin_rule_manager.get_single_rule_by_filter(**kwargs)
+        return await self.casbin_rule_manager.get_single_rule_by_filter(ptype, **kwargs)
 
     async def _add_casbin_rule(self, ptype: str, **kwargs):
         """

@@ -181,14 +181,115 @@ class MySQLPersistence:
     # async def casbin_rule_count(self) -> int:
     #     return await self.objects.execute(self.model.select().count())
 
-    async def get_rule_by_filter(self, **kwargs):
-        return await self.objects.execute(self.model.select().where(**kwargs).first())
+    async def get_rule_by_filter_by_v0(self, ptype: str, v0: str):
+        return await self.objects.execute(
+            self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0).first())
 
-    async def get_rules_by_filter(self, **kwargs):
-        return await self.objects.execute(self.model.select().where(**kwargs))
+    async def get_rule_by_filter_by_v0v1(self, ptype: str, v0, v1: str):
+        return await self.objects.execute(
+            self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0, self.model.v1 == v1).first())
+
+    async def get_rule_by_filter_by_v0v1v2(self, ptype: str, v0, v1, v2: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype, self.model.v0 == v0, self.model.v1 == v1, self.model.v2 == v2).first())
+
+    async def get_rule_by_filter_by_v0v1v2v3(self, ptype: str, v0, v1, v2, v3: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3).first())
+
+    async def get_rule_by_filter_by_v0v1v2v3v4(self, ptype: str, v0, v1, v2, v3, v4: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3,
+                self.model.v4 == v4).first())
+
+    async def get_rule_by_filter_by_v0v1v2v3v4v5(self, ptype: str, v0, v1, v2, v3, v4, v5: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3,
+                self.model.v4 == v4,
+                self.model.v5 == v5).first())
+
+    async def get_rules_by_filter_by_v0(self, ptype: str, v0: str):
+        return await self.objects.execute(
+            self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0))
+
+    async def get_rules_by_filter_by_v0v1(self, ptype: str, v0, v1: str):
+        return await self.objects.execute(
+            self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0, self.model.v1 == v1))
+
+    async def get_rules_by_filter_by_v0v1v2(self, ptype: str, v0, v1, v2: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype, self.model.v0 == v0, self.model.v1 == v1, self.model.v2 == v2))
+
+    async def get_rules_by_filter_by_v0v1v2v3(self, ptype: str, v0, v1, v2, v3: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3))
+
+    async def get_rules_by_filter_by_v0v1v2v3v4(self, ptype: str, v0, v1, v2, v3, v4: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3,
+                self.model.v4 == v4))
+
+    async def get_rules_by_filter_by_v0v1v2v3v4v5(self, ptype: str, v0, v1, v2, v3, v4, v5: str):
+        return await self.objects.execute(
+            self.model.select().where(
+                self.model.ptype == ptype,
+                self.model.v0 == v0,
+                self.model.v1 == v1,
+                self.model.v2 == v2,
+                self.model.v3 == v3,
+                self.model.v4 == v4,
+                self.model.v5 == v5))
 
     async def add_casbin_rule(self, **kwargs):
         await self.objects.execute(self.model.insert(**kwargs))
 
-    async def delete_casbin_rule(self, **kwargs):
-        await self.objects.execute(self.model.delete().where(**kwargs))
+    async def delete_casbin_rule_by_v0(self, ptype: str, v0: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
+
+    async def delete_casbin_rule_by_v0v1(self, ptype: str, v0, v1: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
+
+    async def delete_casbin_rule_by_v0v1v2(self, ptype: str, v0, v1, v2: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
+
+    async def delete_casbin_rule_by_v0v1v2v3(self, ptype: str, v0, v1, v2, v3: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
+
+    async def delete_casbin_rule_by_v0v1v2v3v4(self, ptype: str, v0, v1, v2, v3, v4: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
+
+    async def delete_casbin_rule_by_v0v1v2v3v4v5(self, ptype: str, v0, v1, v2, v3, v4, v5: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v0 == v0))
