@@ -58,13 +58,13 @@ class CommonUserManager:
                                                 avatar=avatar, remark=remark)
 
     async def update_user_info_by_userid(self, user_id: int, username, fullname, email, avatar, remark, password):
-        await self.user_persist.update_user_info(user_id=user_id,
-                                                 username=username,
-                                                 fullname=fullname,
-                                                 email=email,
-                                                 avatar=avatar,
-                                                 remark=remark,
-                                                 password=password)
+        await self.user_persist.update_user_info_by_id(user_id=user_id,
+                                                       username=username,
+                                                       fullname=fullname,
+                                                       email=email,
+                                                       avatar=avatar,
+                                                       remark=remark,
+                                                       password=password)
 
     async def get_user_by_username(self, username: str) -> Optional[UserModel]:
         return await self.user_persist.get_user_by_username(username=username)
@@ -96,12 +96,15 @@ class CommonUserManager:
         return await self.user_persist.update_user_status(primary_key, is_active)
 
     async def delete_user_by_id(self, primary_key):
-        await self.user_persist.delete_user_by_id(primary_key=primary_key)
+        await self.user_persist.delete_model_primary_key(primary_key=primary_key)
 
 
 class CommonRoleManager:
     def __init__(self):
         self.role_persist = MySQLPersistence(model=RoleModel)
+
+    async def all_roles(self) -> Optional[List[RoleModel]]:
+        return await self.role_persist.all()
 
     async def total_role_count(self) -> int:
         """
@@ -118,11 +121,22 @@ class CommonRoleManager:
             created_by: int) -> None:
         await self.role_persist.create_role(role, role_key, description, created_by)
 
+    async def get_role_by_id(self, role_id: int) -> Optional[RoleModel]:
+        role = await self.role_persist.get_model_by_primary_key(primary_key=role_id)
+
+        return role
+
     async def get_role_by_key(self, role_key) -> Optional[RoleModel]:
         role = await self.role_persist.get_role_by_key(role_key=role_key)
         if not role:
             raise RoleNotExistError(role_key=role_key)
         return role
+
+    async def update_role(self, role_id: int, role_name: str, role_key: str, description: str):
+        await self.role_persist.update_role_info_by_id(role_id,
+                                                       role=role_name,
+                                                       role_key=role_key,
+                                                       description=description)
 
 
 class CommonCasbinActionManager:
@@ -179,7 +193,7 @@ class CommonCasbinObjectManager:
                 object_name, object_key, description, created_by=created_by
             )
 
-    async def all_objects(self):
+    async def all_objects(self) -> Optional[List[CasbinObjectModel]]:
         return await self.casbin_object_persist.all()
 
 

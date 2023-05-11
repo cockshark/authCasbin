@@ -18,7 +18,7 @@ from typing import Optional, List, Dict
 
 from email_validator import validate_email
 
-from application.dto.users import CommonUser, CommonRole
+from application.dto.users import CommonUser, CommonRole, CommonCasbinRule
 from domain.gateway.users import (
     CommonUserManager,
     CommonRoleManager,
@@ -265,6 +265,12 @@ class UsersExecutor:
         role
     """
 
+    async def get_all_roles(self) -> List[CommonRole]:
+        return await self.role_manager.all_roles()
+
+    async def get_role_by_id(self, primary_key: int) -> Optional[CommonRole]:
+        return await self.role_manager.get_role_by_id(primary_key)
+
     async def get_role_by_role_key(self, role_key: str) -> Optional[CommonRole]:
 
         try:
@@ -273,7 +279,36 @@ class UsersExecutor:
             logger.error(e.error_msg)
             return None
         else:
-            return CommonRole(role_key=role.id)
+            return CommonRole(role_key=role.id, role=role.role, description=role.description)
+
+    async def update_role_by_id(self, role_id: int, role_name, role_key, description: str):
+        """
+        更新角色信息， 需要更新对应的casbin
+        更新相关的casbin_rule关联用户组的role_key
+        更新相关的casbin_rule关联资源动作的role_key
+        :param role_id:
+        :param role_name:
+        :param role_key:
+        :param description:
+        :return:
+        """
+        role = await self.get_role_by_id(role_id)
+        old_role_key = role.role_key
+
+        # 更新role表
+        await self.role_manager.update_role(role_id=role_id,
+                                            role_name=role_name,
+                                            role_key=role_key,
+                                            description=description)
+
+        # 更新相关的casbin_rule关联用户组的role_key
+        # todo
+        # 更新相关的casbin_rule关联资源动作的role_key
+        # todo
+
+
+    async def create_role(self, role_name: str, role_key: str, description: str, created_by: int) -> None:
+        await self.role_manager.create_role(role_name, role_key, description, created_by)
 
     async def update_user_role(self, user_id: int, roles: List[str]):
 
@@ -285,6 +320,9 @@ class UsersExecutor:
     """
         casbin rule
     """
+
+    async def get_casbin_rules_by_username(self, username: str) -> Optional[List[CommonCasbinRule]]:
+        return await self.casbin_rule_manager.get_rules_by_filter(ptype="g", v0=username)
 
     async def delete_p_casbin_rules(self, username: str):
         """

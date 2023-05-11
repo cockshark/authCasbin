@@ -38,6 +38,12 @@ class MySQLPersistence:
     async def count(self) -> int:
         return await self.objects.execute(self.model.select().count())
 
+    async def get_model_by_primary_key(self, primary_key: int):
+        return await self.objects.execute(self.model.select().where(self.model.id == primary_key))
+
+    async def delete_model_primary_key(self, primary_key: int):
+        await self.objects.execute(self.model.delete().where(self.model.id == primary_key))
+
     ###################################
     #             user                #
     ###################################
@@ -53,9 +59,6 @@ class MySQLPersistence:
 
     async def get_user_by_fullname(self, fullname: str):
         return await self.objects.execute(self.model.select().where(self.model.fullname == fullname))
-
-    async def get_model_by_primary_key(self, primary_key: int):
-        return await self.objects.execute(self.model.select().where(self.model.id == primary_key))
 
     async def get_models_by_fullfuzz_username(self, fullfuzz: str, offset: int, limit: int):
         return await self.objects.execute(
@@ -73,17 +76,8 @@ class MySQLPersistence:
         await self.objects.execute(
             self.model.update(self.model.is_active == is_active).where(self.model.id == primary_key))
 
-    async def update_user_info(self, user_id: int, **kwargs):
+    async def update_user_info_by_id(self, user_id: int, **kwargs):
         await self.objects.execute(self.model.update(**kwargs).where(self.model.id == user_id))
-
-    async def delete_user_by_id(self, primary_key: int):
-        """
-        这里需要自己指定根据什么删除，且只允许删除一个，且键位必须是unique
-        :param primary_key:
-        :param kwargs:
-        :return:
-        """
-        await self.objects.execute(self.model.delete().where(self.model.id == primary_key))
 
     async def add_user(
             self,
@@ -137,6 +131,9 @@ class MySQLPersistence:
 
     async def get_role_by_key(self, role_key: str):
         return await self.objects.execute(self.model.select().where(self.model.role_key == role_key))
+
+    async def update_role_info_by_id(self, role_id: int, **kwargs):
+        await self.objects.execute(self.model.update(**kwargs).where(self.model.id == role_id))
 
     ###################################
     #             casbin_action       #

@@ -64,6 +64,17 @@ class Users(BaseModel):
     count: int
 
 
+class Role(BaseModel):
+    role: str = Field(..., description="角色名称")
+    role_key: str = Field(..., description="角色标识")
+    description: str = Field(None, description="角色描述")
+
+
+class Roles(BaseModel):
+    roles: List[Role]
+    count: int
+
+
 class UserCreateInputDto(User):
     password: str = Field(...)
     current_user: str = Field(..., description="當前用戶")
@@ -103,6 +114,26 @@ class UserListOutputDto(ResponseModel):
 class UpdateUserRoleDto(BaseModel):
     user_id: int
     roles: List[str] = Field(description="角色名称")
+
+
+class UserRolesOutputData(BaseModel):
+    options: List[str] = Field(description="所有权限组的名称")
+    checkeds: List[str] = Field(description="当前用户所拥有的用户组")
+
+
+class UserRolesOutputDto(ResponseModel):
+    data: UserRolesOutputData
+
+
+class CreateRoleInputDto(Role):
+    user_id: int = Field(..., description="created_by,创建人")
+
+
+class UpdateRoleInputDto(BaseModel):
+    role_id: int = Field(gt=0)
+    role: str
+    role_key: str
+    description: str
 
 
 if __name__ == '__main__':

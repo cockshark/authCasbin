@@ -30,7 +30,19 @@ class CommonUser(BaseModel):
 
 
 class CommonRole(BaseModel):
-    role_key: str
+    role_key: str = Field(description="角色标识")
+    role: str = Field(description="角色名称")
+    description: str = Field(default="", description="角色描述")
+
+
+class CommonCasbinRule(BaseModel):
+    ptype: str = Field(default=None)
+    v0: str = Field(default=None)
+    v1: str = Field(default=None)
+    v2: str = Field(default=None)
+    v3: str = Field(default=None)
+    v4: str = Field(default=None)
+    v5: str = Field(default=None)
 
 
 if __name__ == '__main__':

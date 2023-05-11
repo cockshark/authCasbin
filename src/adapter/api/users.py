@@ -60,6 +60,13 @@ from adapter.schema.users import (
     UserCreateOutputDto
 )
 
+from adapter.schema.users import (
+    UserRolesOutputDto,
+    UserRolesOutputData,
+    Roles, Role,
+    CreateRoleInputDto, UpdateRoleInputDto
+)
+
 from adapter.schema.users import UpdateUserRoleDto
 
 from application.executor.users import UsersExecutor
@@ -237,7 +244,7 @@ async def delete_single_user(request: Request,
                              current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
                              executor: UsersExecutor,
                              e: Enforcer = Depends(get_casbin_e),
-                             user_id: int = Field(default=0, gt=0, description="数据库主键，必须大于0")
+                             user_id: int = Field(default=0, gt=0, description="用户id，必须大于0")
                              ):
     enforce = e.enforce(current_user.username, "User", "delete")  # return judge result with reason
     if not enforce:
@@ -337,6 +344,105 @@ async def user_list(request: Request, body: UserListInputDto = Body(...)):
 ######################################
 # Role相关的api接口
 ######################################
+
+@users_router.get("/role/roles",
+                  description="获取所有用户组",
+                  response_model=Roles)
+async def get_roles(request: Request,
+                    current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                    executor: UsersExecutor,
+                    e: Enforcer = Depends(get_casbin_e)):
+    """
+    获取所有的role
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :return:
+    """
+    enforce = e.enforce(current_user.username, "User", "read")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    roles = await executor.get_all_roles()
+    data = []
+    for role in roles:
+        data.append(
+            Role(
+                role=role.role,
+                role_key=role.role_key
+            )
+        )
+    count = len(roles)
+
+    return Roles(roles=data, count=count)
+
+
+@users_router.post("/role/add_role",
+                   description="添加角色", response_model=GeneralOutputDto)
+@users_router.post("/role/create_role",
+                   description="创建角色", response_model=GeneralOutputDto)
+async def create_role(request: Request,
+                      current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                      executor: UsersExecutor,
+                      e: Enforcer = Depends(get_casbin_e),
+                      body: CreateRoleInputDto = Body()):
+    enforce = e.enforce(current_user.username, "Role", "create")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.create_role(role_name=body.role,
+                               role_key=body.role_key,
+                               description=body.description,
+                               created_by=current_user.user_id)
+
+    return GeneralOutputDto(success=True)
+
+
+@users_router.get("role/by_id",
+                  description="根据角色id查看角色",
+                  response_model=Role)
+async def get_role_by_id(request: Request,
+                         current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                         executor: UsersExecutor,
+                         e: Enforcer = Depends(get_casbin_e),
+                         role_id: int = Field(..., gt=0)):
+    enforce = e.enforce(current_user.username, "Role", "read")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    role = await executor.get_role_by_id(role_id)
+
+    return Role(role=role.role, role_key=role.role_key, description=role.description)
+
+
+@users_router.post("/role/update_role",
+                   description="更新角色信息",
+                   response_model=GeneralOutputDto)
+async def update_role(request: Request,
+                      current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                      executor: UsersExecutor,
+                      e: Enforcer = Depends(get_casbin_e),
+                      body: UpdateRoleInputDto = Body(...)):
+    """
+     更新角色（用户组）信息，需要对应更新相关的casbin_rule关联用户组的role_key，更新相关的casbin_rule关联资源动作的role_key
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :param body:
+    :return:
+    """
+
+    enforce = e.enforce(current_user.username, "Role", "update")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.update_role_by_id(role_id=body.role_id, role_name=body.role, role_key=body.role_key)
+
+    return GeneralOutputDto()
+
+
 @users_router.post("/user/change_users_role",
                    description="修改用户的所属角色（用户组）",
                    response_model=GeneralOutputDto)
@@ -362,6 +468,42 @@ async def change_users_role(request: Request,
     await executor.update_user_role(user_id=body.user_id, roles=body.roles)
 
     return GeneralOutputDto(success=True)
+
+
+@users_router.get("/user/get_user_role",
+                  description="获取用户所拥有的用户组",
+                  response_model=UserRolesOutputDto)
+async def get_user_role(request: Request,
+                        current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                        executor: UsersExecutor,
+                        e: Enforcer = Depends(get_casbin_e),
+                        user_id: int = Field(gt=0, description="用户id，必须大于0")):
+    """
+      获取用户所拥有的用户组
+    :param request:
+    :param current_user:
+    :param executor:
+    :param e:
+    :param user_id:
+    :return:
+    """
+    enforce = e.enforce(current_user.username, "User", "read")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    user = await executor.get_user_by_id(user_id)
+    # 获取所有的权限组
+    all_roles = await executor.get_all_roles()
+    options = [role.role for role in all_roles]
+
+    # 获取该用户的所在用户组
+    casbin_rules = await executor.get_casbin_rules_by_username(username=user.username)
+    roles = [await executor.get_role_by_role_key(casbin_rule.v1) for casbin_rule in casbin_rules]
+
+    checkeds = [role.role for role in roles]
+
+    return UserRolesOutputDto(success=True,
+                              data=UserRolesOutputData(options=options, checkeds=checkeds))
 
 
 if __name__ == '__main__':
