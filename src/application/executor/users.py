@@ -302,10 +302,9 @@ class UsersExecutor:
                                             description=description)
 
         # 更新相关的casbin_rule关联用户组的role_key
-        # todo
+        await self.update_casbin_rules_by_ptype_g_v1(old_role_key, v1=role_key)
         # 更新相关的casbin_rule关联资源动作的role_key
-        # todo
-
+        await self.update_casbin_rules_by_ptype_p_v0(old_role_key, v0=role_key)
 
     async def create_role(self, role_name: str, role_key: str, description: str, created_by: int) -> None:
         await self.role_manager.create_role(role_name, role_key, description, created_by)
@@ -324,6 +323,16 @@ class UsersExecutor:
     async def get_casbin_rules_by_username(self, username: str) -> Optional[List[CommonCasbinRule]]:
         return await self.casbin_rule_manager.get_rules_by_filter(ptype="g", v0=username)
 
+    async def get_casbin_rules_by_ptype_g_v1(self, role_key: str) -> Optional[List[CommonCasbinRule]]:
+        """
+        返回被设置的该角色的所有管理员数据
+        :param role_key:
+        :return:
+        """
+        ptype = "g"
+
+        return await self.casbin_rule_manager.get_rules_by_ptype_v1(ptype=ptype, v1=role_key)
+
     async def delete_p_casbin_rules(self, username: str):
         """
         删除该用户所拥有的所有的用户组role
@@ -332,6 +341,16 @@ class UsersExecutor:
         """
 
         await self.casbin_rule_manager.delete_p_casbin_rules(ptype="g", v0=username)
+
+    async def update_casbin_rules_by_ptype_g_v1(self, role_key: str, **kwargs):
+        ptype = "g"
+
+        return await self.casbin_rule_manager.update_rules_by_ptype_v1(ptype=ptype, v1=role_key, **kwargs)
+
+    async def update_casbin_rules_by_ptype_p_v0(self, role_key: str, **kwargs):
+        ptype = "p"
+
+        return await self.casbin_rule_manager.update_rules_by_ptype_v0(ptype=ptype, v1=role_key, **kwargs)
 
     async def set_role_casbin_rules(self, role, casbin_actions, casbin_objects):
 

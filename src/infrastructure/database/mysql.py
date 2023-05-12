@@ -225,6 +225,10 @@ class MySQLPersistence:
         return await self.objects.execute(
             self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0))
 
+    async def get_rules_by_filter_by_v1(self, ptype: str, v1: str):
+        return await self.objects.execute(
+            self.model.select().where(self.model.ptype == ptype, self.model.v1 == v1))
+
     async def get_rules_by_filter_by_v0v1(self, ptype: str, v0, v1: str):
         return await self.objects.execute(
             self.model.select().where(self.model.ptype == ptype, self.model.v0 == v0, self.model.v1 == v1))
@@ -290,3 +294,9 @@ class MySQLPersistence:
     async def delete_casbin_rule_by_v0v1v2v3v4v5(self, ptype: str, v0, v1, v2, v3, v4, v5: str):
         await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
                                                              self.model.v0 == v0))
+
+    async def update_casbin_rule_by_v1(self, ptype: str, v1: str, **kwargs):
+        await self.objects.execute(self.model.update(**kwargs).where(self.model.ptype == ptype, self.model.v1 == v1))
+
+    async def update_casbin_rule_by_v0(self, ptype: str, v0: str, **kwargs):
+        await self.objects.execute(self.model.update(**kwargs).where(self.model.ptype == ptype, self.model.v0 == v0))

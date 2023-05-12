@@ -224,6 +224,9 @@ class CommonCasbinRuleManager:
 
         return await self.casbin_rule_persist.get_rule_by_filter_by_v0(ptype, v0)
 
+    async def get_rules_by_ptype_v1(self, ptype: str, v1: str) -> Optional[List[CasbinRuleModel]]:
+        return await self.casbin_rule_persist.get_rules_by_filter_by_v1(ptype=ptype, v1=v1)
+
     async def get_rules_by_filter(self, ptype: str, **kwargs):
         v0, v1, v2, v3 = kwargs.get("v0"), kwargs.get("v1"), kwargs.get("v2"), kwargs.get("v3")
         v4, v5 = kwargs.get("v4"), kwargs.get("v5")
@@ -268,6 +271,12 @@ class CommonCasbinRuleManager:
             return await self.casbin_rule_persist.get_rules_by_filter_by_v0v1(ptype, v0, v1)
 
         return self.casbin_rule_persist.delete_casbin_rule_by_v0(ptype=ptype, v0=v0)
+
+    async def update_rules_by_ptype_v1(self, ptype: str, v1: str, **kwargs):
+        await self.casbin_rule_persist.update_casbin_rule_by_v1(ptype, v1, **kwargs)
+
+    async def update_rules_by_ptype_v0(self, ptype: str, v0: str, **kwargs):
+        await self.casbin_rule_persist.update_casbin_rule_by_v0(ptype, v0, **kwargs)
 
 
 if __name__ == '__main__':
