@@ -275,6 +275,10 @@ class MySQLPersistence:
         await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
                                                              self.model.v0 == v0))
 
+    async def delete_casbin_rule_by_v1(self, ptype: str, v1: str):
+        await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
+                                                             self.model.v1 == v1))
+
     async def delete_casbin_rule_by_v0v1(self, ptype: str, v0, v1: str):
         await self.objects.execute(self.model.delete().where(self.model.ptype == ptype,
                                                              self.model.v0 == v0))

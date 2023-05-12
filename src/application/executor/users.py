@@ -302,9 +302,22 @@ class UsersExecutor:
                                             description=description)
 
         # 更新相关的casbin_rule关联用户组的role_key
-        await self.update_casbin_rules_by_ptype_g_v1(old_role_key, v1=role_key)
+        await self._update_casbin_rules_by_ptype_g_v1(old_role_key, v1=role_key)
         # 更新相关的casbin_rule关联资源动作的role_key
-        await self.update_casbin_rules_by_ptype_p_v0(old_role_key, v0=role_key)
+        await self._update_casbin_rules_by_ptype_p_v0(old_role_key, v0=role_key)
+
+    async def delete_role_by_id(self, role_id: int):
+        """
+        删除角色，删除相关的casbin rule
+        :param role_id: type: int
+        :return:
+        """
+        role = await self.get_role_by_id(role_id)
+
+        # 删除对应的casbin rule 用户组数据
+        await self._delete_casbin_rules_by_ptype_g_v1(role.role_key)
+        # 删除对应的casbin rule 关联资源动作
+        await self._delete_casbin_rules_by_ptype_p_v0(role.role_key)
 
     async def create_role(self, role_name: str, role_key: str, description: str, created_by: int) -> None:
         await self.role_manager.create_role(role_name, role_key, description, created_by)
@@ -342,15 +355,25 @@ class UsersExecutor:
 
         await self.casbin_rule_manager.delete_p_casbin_rules(ptype="g", v0=username)
 
-    async def update_casbin_rules_by_ptype_g_v1(self, role_key: str, **kwargs):
+    async def _update_casbin_rules_by_ptype_g_v1(self, role_key: str, **kwargs):
         ptype = "g"
 
         return await self.casbin_rule_manager.update_rules_by_ptype_v1(ptype=ptype, v1=role_key, **kwargs)
 
-    async def update_casbin_rules_by_ptype_p_v0(self, role_key: str, **kwargs):
+    async def _update_casbin_rules_by_ptype_p_v0(self, role_key: str, **kwargs):
         ptype = "p"
 
-        return await self.casbin_rule_manager.update_rules_by_ptype_v0(ptype=ptype, v1=role_key, **kwargs)
+        return await self.casbin_rule_manager.update_rules_by_ptype_v0(ptype=ptype, v0=role_key, **kwargs)
+
+    async def _delete_casbin_rules_by_ptype_g_v1(self, role_key: str):
+        ptype = "g"
+
+        return await self.casbin_rule_manager.delete_rules_by_ptype_v1(ptype=ptype, v1=role_key)
+
+    async def _delete_casbin_rules_by_ptype_p_v0(self, role_key: str):
+        ptype = "p"
+
+        return await self.casbin_rule_manager.delete_rules_by_ptype_v0(ptype=ptype, v0=role_key)
 
     async def set_role_casbin_rules(self, role, casbin_actions, casbin_objects):
 

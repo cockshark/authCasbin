@@ -278,6 +278,12 @@ class CommonCasbinRuleManager:
     async def update_rules_by_ptype_v0(self, ptype: str, v0: str, **kwargs):
         await self.casbin_rule_persist.update_casbin_rule_by_v0(ptype, v0, **kwargs)
 
+    def delete_rules_by_ptype_v1(self, ptype: str, v1: str):
+        await self.casbin_rule_persist.delete_casbin_rule_by_v1(ptype, v1)
+
+    def delete_rules_by_ptype_v0(self, ptype: str, v0: str):
+        await self.casbin_rule_persist.delete_casbin_rule_by_v0(ptype, v0)
+
 
 if __name__ == '__main__':
     pass

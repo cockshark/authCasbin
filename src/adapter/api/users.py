@@ -378,7 +378,7 @@ async def get_roles(request: Request,
     return Roles(roles=data, count=count)
 
 
-@users_router.post("/role/add_role",
+@users_router.post("/role/add",
                    description="添加角色", response_model=GeneralOutputDto)
 @users_router.post("/role/create_role",
                    description="创建角色", response_model=GeneralOutputDto)
@@ -399,7 +399,7 @@ async def create_role(request: Request,
     return GeneralOutputDto(success=True)
 
 
-@users_router.get("role/by_id",
+@users_router.get("role/get",
                   description="根据角色id查看角色",
                   response_model=Role)
 async def get_role_by_id(request: Request,
@@ -416,7 +416,7 @@ async def get_role_by_id(request: Request,
     return Role(role=role.role, role_key=role.role_key, description=role.description)
 
 
-@users_router.post("/role/update_role",
+@users_router.post("/role/update",
                    description="更新角色信息",
                    response_model=GeneralOutputDto)
 async def update_role(request: Request,
@@ -441,6 +441,23 @@ async def update_role(request: Request,
     await executor.update_role_by_id(role_id=body.role_id, role_name=body.role, role_key=body.role_key)
 
     return GeneralOutputDto()
+
+
+@users_router.post("/role/delete",
+                   description="删除一个角色",
+                   response_model=GeneralOutputDto)
+async def delete_role_by_id(request: Request,
+                            current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                            executor: UsersExecutor,
+                            e: Enforcer = Depends(get_casbin_e),
+                            role_id: int = Field(..., gt=0)):
+    enforce = e.enforce(current_user.username, "Role", "delete")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    await executor.delete_role_by_id(role_id)
+
+    return GeneralOutputDto
 
 
 @users_router.post("/user/change_users_role",
@@ -504,8 +521,6 @@ async def get_user_role(request: Request,
 
     return UserRolesOutputDto(success=True,
                               data=UserRolesOutputData(options=options, checkeds=checkeds))
-
-
 
 
 if __name__ == '__main__':
