@@ -153,6 +153,14 @@ class MySQLPersistence:
     # def get_all_actions(self):
     #     return await self.objects.execute(self.model.select())
 
+    async def update_casbin_action_by_primary_key(self, primary_key: int,
+                                                  action_name: str,
+                                                  action_key: str,
+                                                  description: str):
+        await self.objects.execute(self.model.update(
+            object_name=action_name, object_key=action_key, description=description
+        ).where(self.model.id == primary_key))
+
     ###################################
     #             casbin_object       #
     ###################################

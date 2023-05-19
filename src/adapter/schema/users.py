@@ -86,6 +86,17 @@ class CasbinObjects(BaseModel):
     count: int
 
 
+class CasbinAction(BaseModel):
+    action_name: str
+    action_key: str
+    description: str
+
+
+class CasbinActions(BaseModel):
+    casbin_actions: List[CasbinAction]
+    count: int
+
+
 class UserCreateInputDto(User):
     password: str = Field(...)
     current_user: str = Field(..., description="當前用戶")
@@ -192,6 +203,19 @@ class UpdateCasbinObjectInputDto(BaseModel):
     co_id: int
     name: str
     object_key: str
+    description: str
+
+
+class CreateCasbinActionInputDto(BaseModel):
+    name: str
+    action_key: str
+    description: str
+
+
+class UpdateCasbinActionInputDto(BaseModel):
+    ca_id: int
+    name: str
+    action_key: str
     description: str
 
 

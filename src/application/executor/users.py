@@ -492,7 +492,7 @@ class UsersExecutor:
     async def update_casbin_object_by_id(self, co_id: int, name, object_key, description: str):
         await self.casbin_object_manager.update_casbin_object_by_primary_key(co_id, name, object_key, description)
 
-    async def delete_casbin_object_by_id(self,co_id:int):
+    async def delete_casbin_object_by_id(self, co_id: int):
         await self.casbin_object_manager.delete_casbin_object_by_primary_key(co_id)
 
     """
@@ -501,6 +501,19 @@ class UsersExecutor:
 
     async def get_all_casbin_actions(self) -> Optional[List[CommonCasbinAction]]:
         return await self.casbin_action_manager.all_actions()
+
+    async def get_casbin_action_by_id(self, ca_id: int) -> Optional[CommonCasbinAction]:
+        return await self.casbin_action_manager.get_casbin_action_by_primary_key(ca_id)
+
+    async def add_casbin_action(self, action_name, action_key, description: str, created_by: int):
+        await self.casbin_action_manager.create_casbin_action(action_name, action_key, description, created_by)
+
+    async def update_casbin_action_by_id(self, ca_id: int, action_name, action_key, description: str):
+        await self.casbin_action_manager.update_casbin_action_by_primary_key(ca_id, action_name, action_key,
+                                                                             description)
+
+    async def delete_casbin_action_by_id(self, ca_id: int):
+        await self.casbin_action_manager.delete_casbin_action_by_primary_key(ca_id)
 
 
 if __name__ == '__main__':

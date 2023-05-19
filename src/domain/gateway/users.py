@@ -146,6 +146,14 @@ class CommonCasbinActionManager:
     async def casbin_action_count(self) -> int:
         return await self.casbin_action_persist.count()
 
+    async def get_casbin_action_by_primary_key(self, primary_key: int):
+        return await self.casbin_action_persist.get_model_by_primary_key(primary_key)
+
+    async def create_casbin_action(self, action_name, action_key, description: str, created_by: int):
+        await self.casbin_action_persist.create_casbin_action(
+            action_name, action_key, description, created_by=created_by
+        )
+
     async def create_casbin_actions(
             self,
             action_names: List[str],
@@ -167,6 +175,13 @@ class CommonCasbinActionManager:
             await self.casbin_action_persist.create_casbin_action(
                 action_name, action_key, description, created_by=created_by
             )
+
+    async def delete_casbin_action_by_primary_key(self, primary_key: int):
+        await self.casbin_action_persist.delete_model_primary_key(primary_key)
+
+    async def update_casbin_action_by_primary_key(self, primary_key: int, object_name, object_key, description: str):
+        await self.casbin_action_persist.update_casbin_action_by_primary_key(primary_key,
+                                                                             object_name, object_key, description)
 
     async def all_actions(self) -> List[CasbinActionModel]:
         return await self.casbin_action_persist.all()
