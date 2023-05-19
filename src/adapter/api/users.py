@@ -347,9 +347,18 @@ async def read_system_status(current_user: Annotated[User, Depends(get_current_u
                    description="获取用户列表",
                    response_model=UserListOutputDto
                    )
-async def user_list(request: Request, body: UserListInputDto = Body(...)):
-    # todo
-    pass
+async def user_list(request: Request,
+                    current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                    executor: UsersExecutor,
+                    e: Enforcer = Depends(get_casbin_e),
+                    body: UserListInputDto = Body(...)):
+    enforce = e.enforce(current_user.username, "UserModel", "read")  # return judge result with reason
+    if not enforce:
+        raise CredentialsException(detail="您的账户权限不足!", headers={"WWW-Authenticate": "Bearer"})
+
+    all_users = await executor.all_users()
+
+    return UserListOutputDto(data=all_users)
 
 
 ######################################
