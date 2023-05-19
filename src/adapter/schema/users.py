@@ -15,7 +15,7 @@ __author__ = "wush"
 
 from typing import Optional, List
 
-from pydantic import BaseModel, Field, BaseSettings
+from pydantic import BaseModel, Field, BaseSettings, root_validator
 
 from adapter.schema.baseResponse import ResponseModel
 from infrastructure.config.config import system_config
@@ -72,6 +72,17 @@ class Role(BaseModel):
 
 class Roles(BaseModel):
     roles: List[Role]
+    count: int
+
+
+class CasbinObject(BaseModel):
+    object_name: str
+    object_key: str
+    description: str
+
+
+class CasbinObjects(BaseModel):
+    casbin_objects: List[CasbinObject]
     count: int
 
 
@@ -133,6 +144,54 @@ class UpdateRoleInputDto(BaseModel):
     role_id: int = Field(gt=0)
     role: str
     role_key: str
+    description: str
+
+
+class RoleCasbinOutputData(BaseModel):
+    options: List[List[str]] = Field(description="所有权限组的名称")
+    checkeds: List[List[str]] = Field(description="当前用户所拥有的用户组")
+
+    @root_validator(pre=True)
+    def combine_data(cls, values):
+        import copy
+        options = values.get("options")
+        checkeds = values.get("checkeds")
+
+        ops = copy.deepcopy(options)
+
+        for checked in checkeds:
+            if len(checked) == 0:
+                break
+            for op in ops:
+                if checked[0] == op[0]:
+                    ops[ops.index(checked)] = checked
+
+        for op in ops:
+            if op not in checkeds:
+                ops[ops.index(op)] = []
+
+        return values
+
+
+class RoleCasbinOutputDto(ResponseModel):
+    data: RoleCasbinOutputData
+
+
+class ChangeRoleCasbinRuleInputDto(BaseModel):
+    role_id: int
+    checkeds: List[List[str]] = Field(..., description="用户组权限说明列表")
+
+
+class CreateCasbinObjectInputDto(BaseModel):
+    name: str
+    object_key: str
+    description: str
+
+
+class UpdateCasbinObjectInputDto(BaseModel):
+    co_id: int
+    name: str
+    object_key: str
     description: str
 
 

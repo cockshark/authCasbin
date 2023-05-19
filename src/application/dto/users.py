@@ -45,5 +45,19 @@ class CommonCasbinRule(BaseModel):
     v5: str = Field(default=None)
 
 
+class CommonCasbinObject(BaseModel):
+    object_name: str
+    object_key: str
+    description: str
+    created_by: int
+
+
+class CommonCasbinAction(BaseModel):
+    action_name: str = Field()
+    action_key: str = Field()
+    description: str = Field(default="")
+    created_by: int = Field(...)
+
+
 if __name__ == '__main__':
     pass

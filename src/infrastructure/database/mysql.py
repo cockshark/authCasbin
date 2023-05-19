@@ -39,7 +39,7 @@ class MySQLPersistence:
         return await self.objects.execute(self.model.select().count())
 
     async def get_model_by_primary_key(self, primary_key: int):
-        return await self.objects.execute(self.model.select().where(self.model.id == primary_key))
+        return await self.objects.execute(self.model.select().where(self.model.id == primary_key).first())
 
     async def delete_model_primary_key(self, primary_key: int):
         await self.objects.execute(self.model.delete().where(self.model.id == primary_key))
@@ -167,6 +167,14 @@ class MySQLPersistence:
             description=description,
             created_by=created_by
         ))
+
+    async def update_casbin_object_by_primary_key(self, primary_key: int,
+                                                  object_name: str,
+                                                  object_key: str,
+                                                  description: str):
+        await self.objects.execute(self.model.update(
+            object_name=object_name, object_key=object_key, description=description
+        ).where(self.model.id == primary_key))
 
     # def get_all_objects(self):
     #     return await self.objects.execute(self.model.select())

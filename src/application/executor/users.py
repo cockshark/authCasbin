@@ -18,7 +18,9 @@ from typing import Optional, List, Dict
 
 from email_validator import validate_email
 
-from application.dto.users import CommonUser, CommonRole, CommonCasbinRule
+from application.dto.users import (
+    CommonUser, CommonRole,
+    CommonCasbinRule, CommonCasbinAction, CommonCasbinObject)
 from domain.gateway.users import (
     CommonUserManager,
     CommonRoleManager,
@@ -336,6 +338,19 @@ class UsersExecutor:
     async def get_casbin_rules_by_username(self, username: str) -> Optional[List[CommonCasbinRule]]:
         return await self.casbin_rule_manager.get_rules_by_filter(ptype="g", v0=username)
 
+    async def get_casbin_rules_by_role_key(self, role_key: str) -> Optional[List[CommonCasbinRule]]:
+        return await self.get_casbin_rules_by_ptype_p_v0(role_key)
+
+    async def get_casbin_rules_by_ptype_p_v0(self, role_key: str) -> Optional[List[CommonCasbinRule]]:
+        """
+        返回被设置的该角色的所有管理员数据
+        :param role_key:
+        :return:
+        """
+        ptype = "p"
+
+        return await self.casbin_rule_manager.get_rules_by_ptype_v1(ptype=ptype, v1=role_key)
+
     async def get_casbin_rules_by_ptype_g_v1(self, role_key: str) -> Optional[List[CommonCasbinRule]]:
         """
         返回被设置的该角色的所有管理员数据
@@ -354,6 +369,34 @@ class UsersExecutor:
         """
 
         await self.casbin_rule_manager.delete_p_casbin_rules(ptype="g", v0=username)
+
+    async def update_role_casbin_rules_ptype_p(self, role_key: str, casbin_rules: List[List[str]]):
+        """
+        批量
+        修改role角色所拥有的权限，先删除role在casbinrule里原有的所有数据，然后添加前端发来的所有新数据。
+        :param role_key:
+        :param casbin_rules:
+        :return:
+        """
+        # delete
+        await self._delete_casbin_rules_by_ptype_p_v0(role_key=role_key)
+        # create
+        for casbin_rule in casbin_rules:
+            v0, v1, v2 = casbin_rule
+            await self.update_role_casbin_rule_ptype_p(v0, v1, v2)
+
+    async def update_role_casbin_rule_ptype_p(self, v0: str, v1: str, v2: str):
+        """
+        添加前端发来的所有新数据。
+        :param role_key:
+        :param v0: role_key
+        :param v1: object_key
+        :param v2: action_eky
+        :return:
+        """
+        ptype = "p"
+
+        await self._add_casbin_rule(ptype=ptype, v0=v0, v1=v1, v2=v2)
 
     async def _update_casbin_rules_by_ptype_g_v1(self, role_key: str, **kwargs):
         ptype = "g"
@@ -424,6 +467,40 @@ class UsersExecutor:
         """
         kwargs.update({"ptype": ptype})
         await self.casbin_rule_manager.add_casbin_rule(**kwargs)
+
+    """
+        casbin objects
+    """
+
+    async def get_all_casbin_objects(self) -> Optional[List[CommonCasbinObject]]:
+        return await self.casbin_object_manager.all_objects()
+
+    async def get_casbin_object_by_id(self, co_id: int) -> Optional[CommonCasbinObject]:
+        return await self.casbin_object_manager.get_casbin_object_by_primary_key(primary_key=co_id)
+
+    async def add_casbin_object(self, object_name: str, object_key: str, created_by: int, description: str = ""):
+        """
+        创建casbin object 对象
+        :param description:
+        :param object_name:
+        :param object_key:
+        :param created_by:
+        :return:
+        """
+        await self.casbin_object_manager.add_casbin_object(object_name, object_key, description, created_by)
+
+    async def update_casbin_object_by_id(self, co_id: int, name, object_key, description: str):
+        await self.casbin_object_manager.update_casbin_object_by_primary_key(co_id, name, object_key, description)
+
+    async def delete_casbin_object_by_id(self,co_id:int):
+        await self.casbin_object_manager.delete_casbin_object_by_primary_key(co_id)
+
+    """
+        casbin actions
+    """
+
+    async def get_all_casbin_actions(self) -> Optional[List[CommonCasbinAction]]:
+        return await self.casbin_action_manager.all_actions()
 
 
 if __name__ == '__main__':

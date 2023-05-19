@@ -179,6 +179,20 @@ class CommonCasbinObjectManager:
     async def casbin_object_count(self) -> int:
         return await self.casbin_object_persist.count()
 
+    async def get_casbin_object_by_primary_key(self, primary_key: int) -> CasbinObjectModel:
+        return await self.casbin_object_persist.get_model_by_primary_key(primary_key)
+
+    async def add_casbin_object(self, object_name, object_key, description: str, created_by: int):
+        await self.casbin_object_persist.create_casbin_object(object_name, object_key, description,
+                                                              created_by=created_by)
+
+    async def delete_casbin_object_by_primary_key(self, primary_key: int):
+        await self.casbin_object_persist.delete_model_primary_key(primary_key)
+
+    async def update_casbin_object_by_primary_key(self, primary_key: int, object_name, object_key, description: str):
+        await self.casbin_object_persist.update_casbin_object_by_primary_key(primary_key,
+                                                                             object_name, object_key, description)
+
     async def create_casbin_objects(
             self,
             object_names: List[str],
