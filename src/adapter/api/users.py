@@ -75,6 +75,8 @@ from adapter.schema.users import (
     UpdateCasbinActionInputDto
 )
 
+from adapter.schema.users import (AuthenticationInputDto)
+
 from adapter.schema.users import UpdateUserRoleDto
 
 from application.executor.users import UsersExecutor
@@ -246,8 +248,8 @@ async def update_user_status(request: Request,
 
 
 @users_router.post("/user/delete_user",
-                  description="删除用户",
-                  response_model=GeneralOutputDto)
+                   description="删除用户",
+                   response_model=GeneralOutputDto)
 async def delete_single_user(request: Request,
                              current_user: Annotated[User, Security(get_current_active_user_with_scope, scopes=["me"])],
                              executor: UsersExecutor,
@@ -759,7 +761,7 @@ async def update_casbin_object(request: Request,
 
 
 @users_router.post('/co/delete_co',
-                  response_model=GeneralOutputDto)
+                   response_model=GeneralOutputDto)
 async def delete_casbin_object(request: Request,
                                current_user: Annotated[
                                    User, Security(get_current_active_user_with_scope, scopes=["me"])],
@@ -863,7 +865,7 @@ async def update_casbin_action(request: Request,
 
 
 @users_router.post("/ca/delete_ca",
-                  response_model=GeneralOutputDto)
+                   response_model=GeneralOutputDto)
 async def delete_casbin_action(request: Request,
                                current_user: Annotated[
                                    User, Security(get_current_active_user_with_scope, scopes=["me"])],
@@ -882,6 +884,51 @@ async def delete_casbin_action(request: Request,
 ######################################
 # Casbin 权限验证的api接口
 ######################################
+
+@users_router.get("/get_menu")
+async def get_menu_permissions(request: Request,
+                               current_user: Annotated[
+                                   User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                               executor: UsersExecutor,
+                               e: Enforcer = Depends(get_casbin_e)):
+    rules = [
+        ['User', 'show'],
+        ['Role', 'show'],
+        ['CasbinObjectModel', 'show'],
+        ['CasbinActionModel', 'show'],
+    ]
+    menu = {}
+    for rule in rules:
+        enforce = e.enforce(current_user.username, rule[0], rule[1])
+        if enforce:
+            menu[rule[0]] = True
+        else:
+            menu[rule[0]] = False
+    return menu
+
+
+@users_router.post("/isAuthenticated")
+async def isAuthenticated(request: Request,
+                          current_user: Annotated[
+                              User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                          executor: UsersExecutor,
+                          e: Enforcer = Depends(get_casbin_e),
+                          request_data: AuthenticationInputDto = Body(...)):
+    """
+    路由页面的权限验证接口
+
+    """
+    return e.enforce(current_user.username, request_data.obj, request_data.action)
+
+
+@users_router.post("casbin_rule_test")
+async def casbin_test(request: Request,
+                      current_user: Annotated[
+                          User, Security(get_current_active_user_with_scope, scopes=["me"])],
+                      executor: UsersExecutor,
+                      e: Enforcer = Depends(get_casbin_e), ):
+    return e.enforce(current_user.username, "User", "read")
+
 
 if __name__ == '__main__':
     pass

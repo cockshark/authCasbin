@@ -219,5 +219,10 @@ class UpdateCasbinActionInputDto(BaseModel):
     description: str
 
 
+class AuthenticationInputDto(BaseModel):
+    obj: str
+    action: str
+
+
 if __name__ == '__main__':
     pass
